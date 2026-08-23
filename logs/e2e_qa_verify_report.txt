@@ -1,0 +1,98 @@
+======================================================================
+E2E 验证开始: 2026-08-21 20:06:58
+======================================================================
+
+----------------------------------------------------------------------
+[常识] Q: 什么是深度学习
+    期望: 含 relevance_check + general_chat_node, 自由回答
+    节点序列: intent_router -> relevance_check -> general_chat_node
+    intent_route: ['general']
+    intent: ['qa']
+    done前100字: '深度学习是机器学习的一个子领域，基于人工神经网络（尤其是深层结构）来模拟人脑处理信息的方式。它通过多层非线性变换自动从原始数据（如图像、语音、文本）中学习层次化特征表示，无需人工设计特征。典型模型包括'
+    done长度: 182, citations: 0
+    耗时: 3.4s
+
+----------------------------------------------------------------------
+[无关] Q: 今天天气怎么样
+    期望: general_chat_node
+    节点序列: intent_router -> relevance_check -> general_chat_node
+    intent_route: ['general']
+    intent: ['qa']
+    done前100字: '我无法获取实时天气信息。建议您查看手机天气应用、气象网站或搜索引擎查询当地最新天气情况。'
+    done长度: 44, citations: 0
+    耗时: 1.4s
+
+----------------------------------------------------------------------
+[单篇] Q: PGDUN 的 PGSA 模块怎么实现
+    期望: relevance_check(rag)+direction_select+retrieve, 单篇匹配 PGDUN
+    节点序列: intent_router -> relevance_check -> direction_select -> retrieve -> relevance_evaluate -> rewrite_query -> retrieve -> relevance_evaluate -> generate -> cite_verify
+    intent_route: ['rag']
+    intent: ['qa']
+    matched_papers: [[5], [5]]
+    done前100字: 'Prompt-guided mechanisms, particularly the Prompt-Guided Spectral Attention (PGSA) module in PGDUN, '
+    done长度: 1240, citations: 0
+    耗时: 23.0s
+
+----------------------------------------------------------------------
+[对比] Q: MWAT-SR 和 Dual-domain 有什么不同
+    期望: 匹配两篇, done 是对比
+    节点序列: intent_router -> relevance_check -> direction_select -> retrieve -> relevance_evaluate -> rewrite_query -> retrieve -> relevance_evaluate -> generate -> cite_verify
+    intent_route: ['rag']
+    intent: ['qa']
+    matched_papers: [[3, 2], [3, 2]]
+    done前100字: '多篇论文提出不同策略以在轻量级图像超分辨率（SR）中平衡计算效率与重建质量。MWAT-SR（A lightweight multi-window attention transformer for i'
+    done长度: 767, citations: 0
+    耗时: 25.5s
+
+----------------------------------------------------------------------
+[宽泛] Q: 超分辨率方向有哪些方法
+    期望: rag(方向词命中), 行为不变
+    节点序列: intent_router -> relevance_check -> direction_select -> retrieve -> relevance_evaluate -> generate -> cite_verify
+    intent_route: ['rag']
+    intent: ['qa']
+    matched_papers: [[]]
+    done前100字: 'Single image super-resolution (SISR) is a classic, ill-posed computer vision task aiming to reconstr'
+    done长度: 1702, citations: 0
+    耗时: 27.7s
+
+----------------------------------------------------------------------
+[闲聊] Q: 你好
+    期望: chat_node
+    节点序列: intent_router -> chat_node
+    intent: ['chitchat']
+    done前100字: '你好！很高兴为你提供论文相关的帮助～如果你有关于论文检索、阅读、写作或学术规范等方面的问题，随时告诉我哦！'
+    done长度: 53, citations: 0
+    耗时: 1.1s
+
+----------------------------------------------------------------------
+[清单] Q: 有什么论文
+    期望: catalog_node
+    节点序列: intent_router -> catalog_node
+    intent: ['catalog']
+    done前100字: 'Neighborhood constrained attention for lightweight image super-resolution\nAMCANet: A Lightweight Arc'
+    done长度: 636, citations: 0
+    耗时: 3.2s
+
+----------------------------------------------------------------------
+[多轮] 第一问: PGDUN 的 PGSA 模块怎么实现
+    节点序列: intent_router -> relevance_check -> direction_select -> retrieve -> relevance_evaluate -> rewrite_query -> retrieve -> relevance_evaluate -> rewrite_query -> retrieve -> relevance_evaluate -> rewrite_query -> retrieve -> relevance_evaluate -> generate -> cite_verify
+    done前100字: 'PGDUN (Prompt-Guided Deep Unfolding) addresses hyperspectral reflectance reconstruction under mixed '
+    耗时: 27.5s
+
+[多轮] 第二问(同一 session 追问指代): 那它跟普通展开网络有什么本质区别
+    节点序列: intent_router -> relevance_check -> direction_select -> retrieve -> relevance_evaluate -> generate -> cite_verify
+    done前100字: 'The PGSA (Prompt-Guided Spectral Attention) module in PGDUN is implemented by modulating spectral at'
+    耗时: 14.0s
+
+======================================================================
+验证摘要
+======================================================================
+[常识] seq=intent_router -> relevance_check -> general_chat_node | done_len=182 | err=无
+[无关] seq=intent_router -> relevance_check -> general_chat_node | done_len=44 | err=无
+[单篇] seq=intent_router -> relevance_check -> direction_select -> retrieve -> relevance_evaluate -> rewrite_query -> retrieve -> relevance_evaluate -> generate -> cite_verify | done_len=1240 | err=无
+[对比] seq=intent_router -> relevance_check -> direction_select -> retrieve -> relevance_evaluate -> rewrite_query -> retrieve -> relevance_evaluate -> generate -> cite_verify | done_len=767 | err=无
+[宽泛] seq=intent_router -> relevance_check -> direction_select -> retrieve -> relevance_evaluate -> generate -> cite_verify | done_len=1702 | err=无
+[闲聊] seq=intent_router -> chat_node | done_len=53 | err=无
+[清单] seq=intent_router -> catalog_node | done_len=636 | err=无
+[多轮-1] seq=intent_router -> relevance_check -> direction_select -> retrieve -> relevance_evaluate -> rewrite_query -> retrieve -> relevance_evaluate -> rewrite_query -> retrieve -> relevance_evaluate -> rewrite_query -> retrieve -> relevance_evaluate -> generate -> cite_verify | done_len=1050 | err=无
+[多轮-2] seq=intent_router -> relevance_check -> direction_select -> retrieve -> relevance_evaluate -> generate -> cite_verify | done_len=1200 | err=无

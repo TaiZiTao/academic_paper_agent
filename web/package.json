@@ -1,0 +1,38 @@
+{
+  "name": "graphrag-web",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "test": "vitest run src/utils",
+    "build": "vue-tsc --noEmit -p tsconfig.app.json && vite build",
+    "preview": "vite preview",
+    "lint": "eslint . --ext .vue,.ts,.tsx --fix",
+    "format": "prettier --write src/"
+  },
+  "dependencies": {
+    "@element-plus/icons-vue": "^2.3.2",
+    "axios": "^1.7.9",
+    "element-plus": "^2.9.6",
+    "katex": "^0.18.4",
+    "marked": "^18.0.7",
+    "pinia": "^2.3.0",
+    "pptxgenjs": "^4.0.1",
+    "vue": "^3.5.13",
+    "vue-router": "^4.5.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.18.0",
+    "@types/katex": "^0.16.8",
+    "@types/node": "^22.10.5",
+    "@vitejs/plugin-vue": "^5.2.1",
+    "eslint": "^9.18.0",
+    "eslint-plugin-vue": "^9.32.0",
+    "prettier": "^3.4.2",
+    "typescript": "~5.6.3",
+    "vite": "^6.0.7",
+    "vitest": "^4.1.10",
+    "vue-tsc": "^2.2.0"
+  }
+}
