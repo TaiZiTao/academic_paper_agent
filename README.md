@@ -585,11 +585,7 @@ MinerU首次运行可能加载模型，复杂扫描件也会明显变慢。检�
 
 后续可优先扩充多论文评测集、引入Reranker、完善Semantic Scholar数据源、增加身份权限与任务队列，并为长会话增加摘要记忆。
 
-## 二次开发说明
 
-本项目在原有FastAPI、Vue 3、LangGraph、Hybrid RAG与SSE工程基础上，围绕“论文智答”场景进行了系统化二次开发，新增或重构了文献搜索与下载、单论文解析工作台、报告/翻译/问答/PPT/审稿任务、多论文路由与自适应检索、论文与会话存储、可信引用和前端工作流可视化。
-
-仓库名称沿用 `GraphRAG--main` 的历史目录，但当前实现准确定位为 **Academic Paper Agent / Hybrid RAG论文助手**。
 
 ## License
 
