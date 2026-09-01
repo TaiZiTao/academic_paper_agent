@@ -70,7 +70,7 @@ function exportMarkdown() {
         <h2>{{ artifact.title }}</h2>
         <button type="button" class="report-export" @click="exportMarkdown"><el-icon><Download /></el-icon>导出 Markdown</button>
       </div>
-      <p>由论文原文证据生成，引用页码均经过校验。</p>
+      <p>由论文原文证据生成；引用状态以证据索引中的“已验证/待核验”标记为准。</p>
     </header>
 
     <article v-for="section in sections" :key="section.key" class="report-section">

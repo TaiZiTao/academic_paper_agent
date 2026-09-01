@@ -155,3 +155,18 @@ async def test_invented_page_is_corrected_without_retry():
     assert result["citations"][0]["verified"] is True
     assert result["citations"][0]["page"] == 2
     assert result["citations"][0]["reason"] == "page_corrected"
+
+
+@pytest.mark.asyncio
+async def test_report_graph_overrides_llm_foreign_paper_context():
+    payload = _valid_payload()
+    payload["citations"][0]["paper_id"] = 999
+    payload["citations"][0]["paper_title"] = "Foreign Paper"
+    llm = FakeReportLLM(payload)
+
+    result = await _graph().ainvoke(_state(), {"configurable": {"llm": llm}})
+
+    assert llm.calls == 1
+    assert result["citations"][0]["paper_id"] == 1
+    assert result["citations"][0]["paper_title"] == "Hybrid Retrieval"
+    assert result["citations"][0]["verified"] is True

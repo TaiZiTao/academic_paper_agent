@@ -1238,8 +1238,9 @@ class PaperService:
                 for item in payload.get("citations", []):
                     if not isinstance(item, dict):
                         continue
-                    item.setdefault("paper_id", paper_id)
-                    item.setdefault("paper_title", paper.title)
+                    # 当前论文上下文由路由参数与数据库记录决定，不信任 LLM 返回值。
+                    item["paper_id"] = paper_id
+                    item["paper_title"] = paper.title
                     try:
                         raw_citations.append(PaperCitation.model_validate(item))
                     except Exception:

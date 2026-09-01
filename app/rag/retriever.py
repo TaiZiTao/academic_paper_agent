@@ -18,6 +18,7 @@ from app.rag.embedding import BaseEmbedding
 from app.rag.fusion import weighted_fusion
 from app.rag.keyword_store import KeywordStore
 from app.rag.vector_store import VectorStore
+from loguru import logger
 
 
 class Retriever:
@@ -89,14 +90,21 @@ class Retriever:
         # 有 kb_id 过滤时多取候选，补偿过滤损失
         candidate_k = k * 4 if kb_id else k * 2
 
-        vector_results = await self.vector_store.search(query, candidate_k)
+        try:
+            vector_results = await self.vector_store.search(query, candidate_k)
+        except Exception as exc:
+            # Embedding/向量服务是外部依赖，失败时保留本地 BM25 通道可用性。
+            logger.warning(f"向量检索失败，降级为 BM25-only: {type(exc).__name__}: {exc}")
+            vector_results = []
         keyword_results = self.keyword_store.search(query, candidate_k)
 
+        vector_weight = self.vector_weight if vector_results else 0.0
+        keyword_weight = self.keyword_weight if vector_results else 1.0
         fused = weighted_fusion(
             vector_results,
             keyword_results,
-            vector_weight=self.vector_weight,
-            keyword_weight=self.keyword_weight,
+            vector_weight=vector_weight,
+            keyword_weight=keyword_weight,
         )
 
         # kb_id 过滤

@@ -36,9 +36,10 @@ export default defineConfig(({ mode }) => {
       rollupOptions: {
         output: {
           manualChunks: {
-            "element-plus": ["element-plus"],
             "element-icons": ["@element-plus/icons-vue"],
             vendor: ["vue", "vue-router", "pinia", "axios"],
+            presentation: ["pptxgenjs"],
+            scientific: ["katex", "marked"],
           },
         },
       },

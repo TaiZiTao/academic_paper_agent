@@ -58,7 +58,7 @@ const ratingRows = computed<Array<{ key: RatingKey; label: string }>>(() => [
           <span v-if="review.recommendation" class="review-rec" :class="recClass">{{ review.recommendation }}</span>
         </div>
       </div>
-      <p>以审稿人视角评估，结论均基于原文证据，引用页码可点击跳转原文。</p>
+      <p>以审稿人视角结合原文证据生成；已核验引用可点击跳转原文。</p>
     </header>
 
     <section v-if="review.summary" class="review-section">

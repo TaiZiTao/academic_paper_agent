@@ -89,8 +89,10 @@ async def report_synthesize_node(
     for item in payload.get("citations", []):
         if not isinstance(item, dict):
             continue
-        item.setdefault("paper_id", state.get("paper_id"))
-        item.setdefault("paper_title", state.get("paper_title", ""))
+        # 论文上下文来自受信任的工作流 State，不能接受 LLM 自行生成的 ID/标题。
+        # 否则示例 Prompt 或模型幻觉会把有效证据误标为其他论文。
+        item["paper_id"] = state.get("paper_id")
+        item["paper_title"] = state.get("paper_title", "")
         try:
             citations.append(PaperCitation.model_validate(item).model_dump())
         except Exception:

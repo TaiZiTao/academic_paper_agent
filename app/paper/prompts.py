@@ -87,8 +87,6 @@ def build_report_prompt(
         "report": {field: ([] if field == "terms" else "中文内容") for field in REPORT_FIELDS},
         "citations": [
             {
-                "paper_id": 1,
-                "paper_title": paper_title,
                 "page": 1,
                 "section": "章节名",
                 "chunk_id": "证据中的 chunk_id",
@@ -104,7 +102,8 @@ def build_report_prompt(
         "3. existing_problems(现有方法存在的问题)：已有方法/基线的主要不足(尽量引用原文)；\n"
         "4. solution(解决方案与创新点)：本文方法如何针对上述问题提出解决方案，与现有工作的本质区别、核心创新；\n"
         "5. contributions(论文主要贡献)：提取论文在引言/摘要中明确陈述的贡献点(通常为编号列表)，逐条用中文转述，尽量引用原文支撑。\n"
-        "不得使用证据之外的信息，不得自行猜测页码。每个重要结论都应由 citations 中的原文支持。\n"
+        "不得使用证据之外的信息，不得自行猜测页码。每个重要结论都应由 citations 中的原文支持。"
+        "引用中的 paper_id 与 paper_title 由系统注入，请勿输出这两个字段。\n"
         "报告要有实质内容、避免空洞结论：每个文本字段写 300~600 个汉字，"
         "作为逻辑完整、有来龙去脉的段落(可用 Markdown 加粗与短列表组织)，"
         "讲清背景脉络、动机来源、问题依据与方案细节，重要论断尽量引用原文支撑；"
@@ -145,31 +144,31 @@ def build_task_prompt(
             "\"minor_issues\": [\"次要问题\"], \"ratings\": {\"novelty\": \"创新性评价\", "
             "\"correctness\": \"技术正确性评价\", \"experiments\": \"实验充分性评价\", \"writing\": \"写作质量评价\"}, "
             "\"suggestions\": [\"修改建议\"], \"recommendation\": \"Accept|Minor Revision|Major Revision|Reject\", "
-            "\"score\": 7, \"citations\": [{\"paper_id\": 1, \"paper_title\": \"标题\", \"page\": 1, "
+            "\"score\": 7, \"citations\": [{\"page\": 1, "
             "\"section\": \"章节\", \"chunk_id\": \"证据ID\", \"quote\": \"原文短句\"}]}"
         )
     elif task_type == "presentation":
         schema = (
             "{\"slides\": [{\"title\": \"第1页标题\", \"bullets\": [\"要点1\", \"要点2\"], "
-            "\"notes\": \"演讲备注\"}], \"citations\": [{\"paper_id\": 1, \"paper_title\": \"标题\", "
+            "\"notes\": \"演讲备注\"}], \"citations\": [{"
             "\"page\": 1, \"section\": \"章节\", \"chunk_id\": \"证据ID\", \"quote\": \"原文短句\"}]}"
         )
     elif task_type == "qa":
         schema = (
-            "{\"content\": \"结果\", \"citations\": [{\"paper_id\": 1, \"paper_title\": \"标题\", "
+            "{\"content\": \"结果\", \"citations\": [{"
             "\"page\": 1, \"section\": \"章节\", \"chunk_id\": \"证据ID\", \"quote\": \"原文短句\"}], "
             "\"suggestions\": [\"追问1\", \"追问2\"]}"
         )
     else:
         schema = (
-            "{\"content\": \"结果\", \"citations\": [{\"paper_id\": 1, \"paper_title\": \"标题\", "
+            "{\"content\": \"结果\", \"citations\": [{"
             "\"page\": 1, \"section\": \"章节\", \"chunk_id\": \"证据ID\", \"quote\": \"原文短句\"}]}"
         )
     return (
         "你是严谨的科研论文助手。"
         + instructions[task_type]
         + "\n只输出 JSON：" + schema + "。"
-        + "不得编造 chunk_id、quote 或页码。\n"
+        + "不得编造 chunk_id、quote 或页码；paper_id 与 paper_title 由系统注入，请勿输出。\n"
         + f"论文：{paper_title}\n任务输入：{input_text}\n"
         + f"历史：{json.dumps(history or [], ensure_ascii=False)}\n证据：\n{evidence}"
     )
@@ -314,14 +313,18 @@ def build_library_qa_prompt(question: str, papers, evidence, history: list[dict]
     paper_titles = {p.id: p.title for p in papers}
     paper_lines = "\n".join(f"- {p.title}" for p in papers)
     evidence_block = "\n\n".join(
-        f"[{chunk.section}; p{chunk.page_start}; {paper_titles.get(chunk.paper_id, chunk.paper_id)}]\n{chunk.content}"
+        f"[chunk_id={getattr(chunk, 'chunk_id', '')}; section={chunk.section}; "
+        f"page={chunk.page_start}; paper_id={chunk.paper_id}; "
+        f"paper_title={paper_titles.get(chunk.paper_id, chunk.paper_id)}]\n{chunk.content}"
         for chunk in evidence
     )
     history_block = _json.dumps(history or [], ensure_ascii=False)
     return (
         "你是严谨的科研论文综述助手。基于以下多篇论文的证据回答用户问题。"
         "回答要覆盖尽量多的论文, 引用时给出论文标题+章节+页码。"
-        "若证据不足请说明。只输出 JSON: {\"content\": \"回答\", "
+        "若证据不足请说明。引用中的 paper_id 和 chunk_id 必须复制对应证据标识，"
+        "quote 必须从对应证据原文逐字复制，禁止翻译、改写或拼接。"
+        "只输出 JSON: {\"content\": \"回答\", "
         "\"citations\": [{\"paper_id\": 1, \"paper_title\": \"标题\", \"page\": 1, "
         "\"section\": \"章节\", \"chunk_id\": \"ID\", \"quote\": \"原文短句\"}]}. "
         "\n\n对话历史(供理解追问, 不要重复已回答内容):\n" + history_block

@@ -37,6 +37,15 @@ class TaskLLM:
         return type("Response", (), {"content": json.dumps(payload, ensure_ascii=False)})()
 
 
+class ForeignContextTaskLLM(TaskLLM):
+    async def ainvoke(self, prompt):
+        response = await super().ainvoke(prompt)
+        payload = json.loads(response.content)
+        payload["citations"][0]["paper_id"] = 999
+        payload["citations"][0]["paper_title"] = "Foreign Paper"
+        return type("Response", (), {"content": json.dumps(payload, ensure_ascii=False)})()
+
+
 class TaskRetriever:
     def __init__(self):
         self.chunks = {}
@@ -227,6 +236,28 @@ async def test_task_is_grounded_streamed_and_persisted(task_type, tmp_path):
     async with session_factory() as session:
         artifacts = await session.scalar(select(func.count()).select_from(PaperArtifact))
         assert artifacts == 2
+    await engine.dispose()
+
+
+@pytest.mark.asyncio
+async def test_task_overrides_llm_foreign_paper_context(tmp_path):
+    service, paper, _session_factory, engine = await make_service(tmp_path)
+    service.llm = ForeignContextTaskLLM()
+
+    events = [
+        event
+        async for event in service.run_task(
+            paper.id,
+            task_type="qa",
+            input_text="请分析方法",
+            session_id="foreign-context",
+        )
+    ]
+
+    done = next(event for event in events if event["event"] == "done")
+    assert done["citations"][0]["paper_id"] == paper.id
+    assert done["citations"][0]["paper_title"] == "Task Paper"
+    assert done["citations"][0]["verified"] is True
     await engine.dispose()
 
 

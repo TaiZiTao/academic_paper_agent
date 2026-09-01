@@ -316,3 +316,19 @@ class TestRetriever:
         for k in [1, 3, 5]:
             results = await retriever.search("test query", k=k)
             assert len(results) <= k
+
+    @pytest.mark.asyncio
+    async def test_search_falls_back_to_bm25_when_embedding_times_out(
+        self, retriever, sample_chunks, monkeypatch
+    ):
+        await retriever.add_documents(sample_chunks)
+
+        async def timeout_search(_query, _k):
+            raise TimeoutError("embedding service timed out")
+
+        monkeypatch.setattr(retriever.vector_store, "search", timeout_search)
+
+        results = await retriever.search("BM25 bag words retrieval", k=3)
+
+        assert results
+        assert any("BM25" in chunk.content for chunk, _score in results)
